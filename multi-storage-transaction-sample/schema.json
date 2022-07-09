@@ -1,56 +1,86 @@
 {
-  "customer.customers": {
-    "transaction": true,
-    "partition-key": [
-      "customer_id"
-    ],
-    "columns": {
-      "customer_id": "INT",
-      "name": "TEXT",
-      "credit_limit": "INT",
-      "credit_total": "INT"
+    "amazon.items": {
+        "transaction": true,
+        "partition-key": ["amazon_item_id"],
+        "columns": {
+            "amazon_item_id": "INT",
+            "name": "TEXT",
+            "price": "INT",
+            "quantity": "INT"
+        }
+    },
+    "amazon.customers": {
+        "transaction": true,
+        "partition-key": ["amazon_customer_id"],
+        "columns": {
+            "amazon_customer_id": "INT",
+            "name": "TEXT",
+            "address": "TEXT"
+        }
+    },
+    "amazon.orders": {
+        "transaction": true,
+        "partition-key": ["amazon_order_id"],
+        "columns": {
+            "amazon_order_id": "INT",
+            "amazon_customer_id": "INT",
+            "amazon_item_id": "INT",
+            "timestamp": "BIGINT",
+            "count": "INT"
+        }
+    },
+    "rakuten.items": {
+        "transaction": true,
+        "partition-key": ["rakuten_item_id"],
+        "columns": {
+            "rakuten_item_id": "INT",
+            "name": "TEXT",
+            "price": "INT",
+            "quantity": "INT"
+        }
+    },
+    "rakuten.customers": {
+        "transaction": true,
+        "partition-key": ["rakuten_customer_id"],
+        "columns": {
+            "rakuten_customer_id": "TEXT",
+            "name": "TEXT",
+            "address": "TEXT"
+        }
+    },
+    "rakuten.orders": {
+        "transaction": true,
+        "partition-key": ["rakuten_order_id"],
+        "columns": {
+            "rakuten_order_id": "INT",
+            "rakuten_customer_id": "INT",
+            "rakuten_item_id": "INT",
+            "timestamp": "BIGINT",
+            "count": "INT"
+        }
+    },
+    "warehouse.items": {
+        "transaction": true,
+        "partition-key": ["item_id"],
+        "columns": {
+            "item_id": "INT",
+            "name": "TEXT",
+            "quantity": "INT",
+            "rakuten_item_id": "INT",
+            "amazon_item_id": "INT",
+            "seller_id": "INT"
+        }
+    },
+    "warehouse.orders": {
+        "transaction": true,
+        "partition-key": ["order_id"],
+        "columns": {
+            "order_id": "INT",
+            "marketplace": "TEXT",
+            "timestamp": "BIGINT",
+            "item_id": "INT",
+            "address": "TEXT",
+            "count": "INT"
+        }
     }
-  },
-  "order.orders": {
-    "transaction": true,
-    "partition-key": [
-      "customer_id"
-    ],
-    "clustering-key": [
-      "timestamp"
-    ],
-    "secondary-index": [
-      "order_id"
-    ],
-    "columns": {
-      "order_id": "TEXT",
-      "customer_id": "INT",
-      "timestamp": "BIGINT"
-    }
-  },
-  "order.statements": {
-    "transaction": true,
-    "partition-key": [
-      "order_id"
-    ],
-    "clustering-key": [
-      "item_id"
-    ],
-    "columns": {
-      "order_id": "TEXT",
-      "item_id": "INT",
-      "count": "INT"
-    }
-  },
-  "order.items": {
-    "transaction": true,
-    "partition-key": [
-      "item_id"
-    ],
-    "columns": {
-      "item_id": "INT",
-      "name": "TEXT",
-      "price": "INT"
-    }
-  }
 }
