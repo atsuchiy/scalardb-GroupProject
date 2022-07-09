@@ -32,14 +32,26 @@ public class Sample implements AutoCloseable {
     DistributedTransaction transaction = null;
     try {
       transaction = manager.start();
-      loadCustomerIfNotExists(transaction, 1, "Yamada Taro", 10000, 0);
-      loadCustomerIfNotExists(transaction, 2, "Yamada Hanako", 10000, 0);
-      loadCustomerIfNotExists(transaction, 3, "Suzuki Ichiro", 10000, 0);
-      loadItemIfNotExists(transaction, 1, "Apple", 1000);
-      loadItemIfNotExists(transaction, 2, "Orange", 2000);
-      loadItemIfNotExists(transaction, 3, "Grape", 2500);
-      loadItemIfNotExists(transaction, 4, "Mango", 5000);
-      loadItemIfNotExists(transaction, 5, "Melon", 3000);
+      loadAmazonItemsIfNotExists(transaction, 1, "Apple", 190, 100);
+      loadAmazonItemsIfNotExists(transaction, 2, "Orange", 250, 50);
+      loadAmazonItemsIfNotExists(transaction, 3, "Grape", 500, 10);
+      loadAmazonItemsIfNotExists(transaction, 4, "Mango", 1500, 1000);
+      loadAmazonItemsIfNotExists(transaction, 5, "Melon", 1900, 300);
+      loadAmazonCustomersIfNotExists(transaction, 1, "Yamada Taro", "America");
+      loadAmazonCustomersIfNotExists(transaction, 2, "Sato Jiro", "Japan");
+      loadAmazonCustomersIfNotExists(transaction, 3, "Mita Taro", "Japan");
+      loadRakutenItemsIfNotExists(transaction, 1, "Melon", 1500, 300);
+      loadRakutenItemsIfNotExists(transaction, 2, "Mango", 1000, 1000);
+      loadRakutenItemsIfNotExists(transaction, 3, "Grape", 700, 10);
+      loadRakutenItemsIfNotExists(transaction, 4, "Orange", 300, 50);
+      loadRakutenItemsIfNotExists(transaction, 5, "Apple", 200, 100);
+      loadRakutenCustomersIfNotExists(transaction, 1, "Yamada Hanako", "China");
+      loadRakutenCustomersIfNotExists(transaction, 2, "Suzuki Ichiro", "Japan");
+      loadWarehouseItemsIfNotExists(transaction, 1, "Apple", 100, 5, 1, 1);
+      loadWarehouseItemsIfNotExists(transaction, 2, "Orange", 50, 4, 2, 1);
+      loadWarehouseItemsIfNotExists(transaction, 3, "Grape", 10, 3, 3, 1);
+      loadWarehouseItemsIfNotExists(transaction, 4, "Mango", 1000, 2, 4, 1);
+      loadWarehouseItemsIfNotExists(transaction, 5, "Melon", 300, 1, 5, 1);
       transaction.commit();
     } catch (TransactionException e) {
       if (transaction != null) {
@@ -50,41 +62,117 @@ public class Sample implements AutoCloseable {
     }
   }
 
-  private void loadCustomerIfNotExists(
+  private void loadAmazonItemsIfNotExists(
       DistributedTransaction transaction,
-      int customerId,
+      int amazonItemId,
       String name,
-      int creditLimit,
-      int creditTotal)
+      int price,
+      int quantity)
+      throws TransactionException {
+    Optional<Result> item =
+        transaction.get(
+            new Get(new Key("amazon_item_id", amazonItemId))
+                .forNamespace("amazon")
+                .forTable("items"));
+    if (!item.isPresent()) {
+      transaction.put(
+          new Put(new Key("amazon_item_id", amazonItemId))
+              .withValue("name", name)
+              .withValue("price", price)
+              .withValue("quantity", quantity)
+              .forNamespace("amazon")
+              .forTable("items"));
+    }
+  }
+
+  private void loadAmazonCustomersIfNotExists(
+      DistributedTransaction transaction,
+      int amazonCustomerId,
+      String name,
+      String address)
       throws TransactionException {
     Optional<Result> customer =
         transaction.get(
-            new Get(new Key("customer_id", customerId))
-                .forNamespace("customer")
+            new Get(new Key("amazon_customer_id", amazonCustomerId))
+                .forNamespace("amazon")
                 .forTable("customers"));
     if (!customer.isPresent()) {
       transaction.put(
-          new Put(new Key("customer_id", customerId))
+          new Put(new Key("amazon_customer_id", amazonCustomerId))
               .withValue("name", name)
-              .withValue("credit_limit", creditLimit)
-              .withValue("credit_total", creditTotal)
-              .forNamespace("customer")
+              .withValue("address", address)
+              .forNamespace("amazon")
               .forTable("customers"));
     }
   }
 
-  private void loadItemIfNotExists(
-      DistributedTransaction transaction, int itemId, String name, int price)
+  private void loadRakutenItemsIfNotExists(
+      DistributedTransaction transaction,
+      int rakutenItemId,
+      String name,
+      int price,
+      int quantity)
       throws TransactionException {
     Optional<Result> item =
         transaction.get(
-            new Get(new Key("item_id", itemId)).forNamespace("order").forTable("items"));
+            new Get(new Key("rakuten_item_id", rakutenItemId))
+                .forNamespace("rakuten")
+                .forTable("items"));
+    if (!item.isPresent()) {
+      transaction.put(
+          new Put(new Key("rakuten_item_id", rakutenItemId))
+              .withValue("name", name)
+              .withValue("price", price)
+              .withValue("quantity", quantity)
+              .forNamespace("rakuten")
+              .forTable("items"));
+    }
+  }
+
+  private void loadRakutenCustomersIfNotExists(
+    DistributedTransaction transaction,
+    int rakutenCustomerId,
+    String name,
+    String address)
+    throws TransactionException {
+    Optional<Result> customer =
+      transaction.get(
+          new Get(new Key("rakuten_customer_id", rakutenCustomerId))
+              .forNamespace("rakuten")
+              .forTable("customers"));
+    if (!customer.isPresent()) {
+    transaction.put(
+        new Put(new Key("rakuten_customer_id", rakutenCustomerId))
+            .withValue("name", name)
+            .withValue("address", address)
+            .forNamespace("rakuten")
+            .forTable("customers"));
+    }
+  }
+
+  private void loadWarehouseItemsIfNotExists(
+      DistributedTransaction transaction, 
+      int itemId, 
+      String name, 
+      int quantity,
+      int rakutenItemId,
+      int amazonItemId,
+      int sellerId)
+      throws TransactionException {
+    Optional<Result> item =
+        transaction.get(
+            new Get(new Key("item_id", itemId))
+            .forNamespace("warehouse")
+            .forTable("items"));
     if (!item.isPresent()) {
       transaction.put(
           new Put(new Key("item_id", itemId))
               .withValue("name", name)
-              .withValue("price", price)
-              .forNamespace("order")
+              .withValue("quantity", quantity)
+              .withValue("rakuten_item_id", rakutenItemId)
+              .withValue("amazon_item_id", amazonItemId)
+              .withValue("seller_id", sellerId)
+              .forNamespace("warehouse")
               .forTable("items"));
     }
   }
