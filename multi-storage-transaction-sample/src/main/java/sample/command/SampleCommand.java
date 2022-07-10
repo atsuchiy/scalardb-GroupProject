@@ -9,11 +9,19 @@ import picocli.CommandLine.Option;
     description = "Sample application for Microservice Transaction",
     subcommands = {
       LoadInitialDataCommand.class,
-      PlaceOrderCommand.class,
-      GetOrderCommand.class,
-      GetOrdersCommand.class,
-      GetCustomerInfoCommand.class,
-      RepaymentCommand.class
+      //PlaceOrderCommand.class,
+      PlaceAmazonOrderCommand.class,
+      PlaceRakutenOrderCommand.class,
+      //GetOrderCommand.class,
+      GetAmazonOrderCommand.class,
+      GetRakutenOrderCommand.class,
+      //GetOrdersCommand.class,
+      GetAmazonOrdersCommand.class,
+      GetRakutenOrdersCommand.class,
+      //GetCustomerInfoCommand.class,
+      GetAmazonCustomerInfoCommand.class,
+      GetRakutenCustomerInfoCommand.class
+      //RepaymentCommand.class
     })
 public class SampleCommand implements Runnable {
 

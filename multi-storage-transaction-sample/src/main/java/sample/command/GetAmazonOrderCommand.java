@@ -5,8 +5,8 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 import sample.Sample;
 
-@Command(name = "GetOrder", description = "Get order information by order ID")
-public class GetOrderCommand implements Callable<Integer> {
+@Command(name = "GetAmazonOrder", description = "Get Amazon order information by order ID")
+public class GetAmazonOrderCommand implements Callable<Integer> {
 
   @Parameters(index = "0", paramLabel = "ORDER_ID", description = "order ID")
   private String orderId;
@@ -14,7 +14,7 @@ public class GetOrderCommand implements Callable<Integer> {
   @Override
   public Integer call() throws Exception {
     try (Sample sample = new Sample()) {
-      System.out.println(sample.getOrderByOrderId(orderId));
+      System.out.println(sample.getAmazonOrderByOrderId(orderId));
     }
     return 0;
   }
