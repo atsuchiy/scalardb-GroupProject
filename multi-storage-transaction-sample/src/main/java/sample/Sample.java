@@ -697,6 +697,45 @@ public class Sample implements AutoCloseable {
     }
   }
 
+  // doesn't work well because of the error of scan
+  public String getItems(int sellerId) throws TransactionException {
+    DistributedTransaction transaction = null;
+    try {
+      // Start a transaction
+      transaction = manager.start();
+
+      List<Result> items =
+          transaction.scan(
+              new Scan(new Key("seller_id", sellerId)) //ここ”seller_id"の代わりにパーティションキー”item_id"にするとエラー起きずに実行できた
+                  .forNamespace("warehouse")
+                  .forTable("items"));
+      
+      // Make order JSONs for the orders of the customer
+      List<String> itemJsons = new ArrayList<>();
+      int count = 1;
+      for (Result item : items) {
+        itemJsons.add(
+            String.format("%d: {\"id\": %d, \"name\": %s, \"quantity\": %d}",
+                          count++,
+                          item.getValue("item_id").get().getAsInt(),
+                          item.getValue("name").get().getAsString().get(),
+                          item.getValue("quantity").get().getAsInt()));
+      }
+
+      // Commit the transaction (even when the transaction is read-only, we need to commit)
+      transaction.commit();
+
+      // Return the item info as a JSON format
+      return String.format("{%s}", String.join(",", itemJsons));
+    } catch (Exception e) {
+      if (transaction != null) {
+        // If an error occurs, abort the transaction
+        transaction.abort();
+      }
+      throw e;
+    }
+  }
+
   /*
   public void repayment(int customerId, int amount) throws TransactionException {
     DistributedTransaction transaction = null;
