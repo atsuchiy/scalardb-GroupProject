@@ -289,7 +289,7 @@ public class Sample implements AutoCloseable {
       Optional<Result> item =
           transaction.get(
               new Get(new Key("item_id", itemId)).forNamespace("warehouse").forTable("items"));
-      if (!amazonItem.isPresent()) {
+      if (!item.isPresent()) {
         throw new RuntimeException("Item not found");
       }
       Optional<Result> rakutenItem =
@@ -727,6 +727,56 @@ public class Sample implements AutoCloseable {
 
       // Return the item info as a JSON format
       return String.format("{%s}", String.join(",", itemJsons));
+    } catch (Exception e) {
+      if (transaction != null) {
+        // If an error occurs, abort the transaction
+        transaction.abort();
+      }
+      throw e;
+    }
+  }
+
+  public String setQuantity(int itemId, int quantity) throws TransactionException {
+    DistributedTransaction transaction = null;
+    try {
+      // Start a transaction
+      transaction = manager.start();
+
+      Optional<Result> item =
+          transaction.get(
+              new Get(new Key("item_id", itemId)).forNamespace("warehouse").forTable("items"));
+      if (!item.isPresent()) {
+        throw new RuntimeException("Item not found");
+      }
+      transaction.put(
+          new Put(new Key("item_id", itemId)).withValue("quantity", quantity)
+          .forNamespace("warehouse")
+          .forTable("items")
+      );
+
+      int amazonItemId = item.get().getValue("amazon_item_id").get().getAsInt();
+      Optional<Result> amazonItem =
+          transaction.get(
+              new Get(new Key("amazon_item_id", amazonItemId)).forNamespace("amazon").forTable("items"));
+      transaction.put(
+          new Put(new Key("amazon_item_id", amazonItemId)).withValue("quantity", quantity)
+          .forNamespace("amazon")
+          .forTable("items")
+      );
+
+      int rakutenItemId = item.get().getValue("rakuten_item_id").get().getAsInt();
+      Optional<Result> rakutenItem =
+          transaction.get(
+              new Get(new Key("rakuten_item_id", rakutenItemId)).forNamespace("rakuten").forTable("items"));
+      transaction.put(
+          new Put(new Key("rakuten_item_id", rakutenItemId)).withValue("quantity", quantity)
+          .forNamespace("rakuten")
+          .forTable("items")
+      );
+
+      transaction.commit();
+
+      return "ok";
     } catch (Exception e) {
       if (transaction != null) {
         // If an error occurs, abort the transaction

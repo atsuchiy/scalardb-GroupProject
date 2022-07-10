@@ -23,7 +23,8 @@ import picocli.CommandLine.Option;
       GetRakutenCustomerInfoCommand.class,
       //RepaymentCommand.class
 
-      GetItemsCommand.class
+      GetItemsCommand.class,
+      SetQuantityCommand.class
     })
 public class SampleCommand implements Runnable {
 
