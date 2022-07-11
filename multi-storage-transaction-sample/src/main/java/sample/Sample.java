@@ -688,7 +688,7 @@ public class Sample implements AutoCloseable {
       transaction.commit();
 
       // Return the order info as a JSON format
-      return String.format("{\"order\": [%s]}", String.join(",", orderJsons));
+      return String.format("{\"order\": %s}", String.join(",", orderJsons));
     } catch (Exception e) {
       if (transaction != null) {
         // If an error occurs, abort the transaction
@@ -724,7 +724,7 @@ public class Sample implements AutoCloseable {
       transaction.commit();
 
       // Return the order info as a JSON format
-      return String.format("{\"order\": [%s]}", String.join(",", orderJsons));
+      return String.format("{\"order\": %s}", String.join(",", orderJsons));
     } catch (Exception e) {
       if (transaction != null) {
         // If an error occurs, abort the transaction

@@ -21,7 +21,7 @@ public class PlaceRakutenOrderCommand implements Callable<Integer> {
   public Integer call() throws Exception {
     String[] split = orders.split(":", -1);
     int itemId = Integer.parseInt(split[0]);
-    int itemCount = Integer.parseInt(split[0]);
+    int itemCount = Integer.parseInt(split[1]);
 
     try (Sample sample = new Sample()) {
       System.out.println(sample.placeRakutenOrder(customerId, itemId, itemCount));
