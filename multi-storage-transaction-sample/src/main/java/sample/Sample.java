@@ -16,12 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.logging.FileHandler;
-import java.util.logging.Formatter;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 public class Sample implements AutoCloseable {
 
@@ -300,18 +294,18 @@ public class Sample implements AutoCloseable {
       if (!amazonItem.isPresent()) {
         throw new RuntimeException("Item not found");
       }
-      Optional<Result> item =
-          transaction.get(
-              new Get(new Key("item_id", itemId)).forNamespace("warehouse").forTable("items"));
-      if (!item.isPresent()) {
-        throw new RuntimeException("Item not found");
-      }
+      List<Result> item =
+        transaction.scan(
+            new Scan(new Key("amazon_item_id", itemId))
+                .forNamespace("warehouse")
+                .forTable("items")); 
+      int rakuten_itemId = item.get(0).getValue("rakuten_item_id").get().getAsInt();
       Optional<Result> rakutenItem =
           transaction.get(
-              new Get(new Key("rakuten_item_id", itemId)).forNamespace("rakuten").forTable("items"));
+              new Get(new Key("rakuten_item_id", rakuten_itemId)).forNamespace("rakuten").forTable("items"));
 
       // Check if the count exceeds the quantity
-      int warehouseQuantity = item.get().getValue("quantity").get().getAsInt();
+      int warehouseQuantity = item.get(0).getValue("quantity").get().getAsInt();
       int amazonQuantity = amazonItem.get().getValue("quantity").get().getAsInt();
       if (itemCount > warehouseQuantity || itemCount > amazonQuantity) {
         throw new RuntimeException("Count exceeded");
@@ -323,15 +317,17 @@ public class Sample implements AutoCloseable {
           .forNamespace("amazon")
           .forTable("items")
       );
+      int warehouse_itemId = item.get(0).getValue("item_id").get().getAsInt();
       transaction.put(
-          new Put(new Key("item_id", itemId)).withValue("quantity", warehouseQuantity - itemCount)
+          new Put(new Key("item_id", warehouse_itemId))
+          .withValue("quantity", warehouseQuantity - itemCount)
           .forNamespace("warehouse")
           .forTable("items")
       );
       if (rakutenItem.isPresent()) {
           int rakutenQuantity = warehouseQuantity;
           transaction.put(
-              new Put(new Key("rakuten_item_id", itemId)).withValue("quantity", rakutenQuantity - itemCount)
+              new Put(new Key("rakuten_item_id", rakuten_itemId)).withValue("quantity", rakutenQuantity - itemCount)
               .forNamespace("rakuten")
               .forTable("items")
           );
@@ -420,18 +416,18 @@ public class Sample implements AutoCloseable {
       if (!rakutenItem.isPresent()) {
         throw new RuntimeException("Item not found");
       }
-      Optional<Result> item =
-          transaction.get(
-              new Get(new Key("item_id", itemId)).forNamespace("warehouse").forTable("items"));
-      if (!item.isPresent()) {
-        throw new RuntimeException("Item not found");
-      }
+      List<Result> item =
+      transaction.scan(
+          new Scan(new Key("rakuten_item_id", itemId))
+              .forNamespace("warehouse")
+              .forTable("items")); 
+      int amazon_itemId = item.get(0).getValue("amazon_item_id").get().getAsInt();
       Optional<Result> amazonItem =
           transaction.get(
-              new Get(new Key("amazon_item_id", itemId)).forNamespace("amazon").forTable("items"));
+              new Get(new Key("amazon_item_id", amazon_itemId)).forNamespace("amazon").forTable("items"));
 
       // Check if the count exceeds the quantity
-      int warehouseQuantity = item.get().getValue("quantity").get().getAsInt();
+      int warehouseQuantity = item.get(0).getValue("quantity").get().getAsInt();
       int rakutenQuantity = rakutenItem.get().getValue("quantity").get().getAsInt();
       if (itemCount > warehouseQuantity || itemCount > rakutenQuantity) {
         throw new RuntimeException("Count exceeded");
@@ -443,15 +439,17 @@ public class Sample implements AutoCloseable {
           .forNamespace("rakuten")
           .forTable("items")
       );
+      int warehouse_itemId = item.get(0).getValue("item_id").get().getAsInt();
       transaction.put(
-          new Put(new Key("item_id", itemId)).withValue("quantity", warehouseQuantity - itemCount)
+          new Put(new Key("item_id", warehouse_itemId))
+          .withValue("quantity", warehouseQuantity - itemCount)
           .forNamespace("warehouse")
           .forTable("items")
       );
       if (amazonItem.isPresent()) {
           int amazonQuantity = warehouseQuantity;
           transaction.put(
-              new Put(new Key("amazon_item_id", itemId)).withValue("quantity", amazonQuantity - itemCount)
+              new Put(new Key("amazon_item_id", amazon_itemId)).withValue("quantity", amazonQuantity - itemCount)
               .forNamespace("amazon")
               .forTable("items")
           );
@@ -662,8 +660,6 @@ public class Sample implements AutoCloseable {
     }
   }
 
-  // doesn't work well because of the error of scan
-  // partition keyがamazon_customer_idではなくamazon_order_idなため使えなさそう
   public String getAmazonOrdersByCustomerId(int customerId) throws TransactionException {
     DistributedTransaction transaction = null;
     try {
@@ -698,8 +694,6 @@ public class Sample implements AutoCloseable {
     }
   }
 
-  // doesn't work well because of the error of scan
-  // partition keyがrakuten_customer_idではなくrakuten_order_idなため使えなさそう
   public String getRakutenOrdersByCustomerId(int customerId) throws TransactionException {
     DistributedTransaction transaction = null;
     try {
@@ -773,6 +767,7 @@ public class Sample implements AutoCloseable {
     }
   }
 
+  // "quantity"で指定した分だけ在庫の数を増やす
   public String setQuantity(int itemId, int quantity) throws TransactionException {
     DistributedTransaction transaction = null;
     try {
@@ -785,35 +780,39 @@ public class Sample implements AutoCloseable {
       if (!item.isPresent()) {
         throw new RuntimeException("Item not found");
       }
+
+      int warehouseQuantity = item.get().getValue("quantity").get().getAsInt();
+      int rakutenItemId = item.get().getValue("rakuten_item_id").get().getAsInt();
+      int amazonItemId = item.get().getValue("amazon_item_id").get().getAsInt();
       transaction.put(
-          new Put(new Key("item_id", itemId)).withValue("quantity", quantity)
+          new Put(new Key("item_id", itemId))
+          .withValue("quantity", warehouseQuantity + quantity)
           .forNamespace("warehouse")
           .forTable("items")
       );
 
-      int amazonItemId = item.get().getValue("amazon_item_id").get().getAsInt();
-      Optional<Result> amazonItem =
-          transaction.get(
-              new Get(new Key("amazon_item_id", amazonItemId)).forNamespace("amazon").forTable("items"));
       transaction.put(
-          new Put(new Key("amazon_item_id", amazonItemId)).withValue("quantity", quantity)
+          new Put(new Key("amazon_item_id", amazonItemId))
+          .withValue("quantity", warehouseQuantity + quantity)
           .forNamespace("amazon")
           .forTable("items")
       );
 
-      int rakutenItemId = item.get().getValue("rakuten_item_id").get().getAsInt();
-      Optional<Result> rakutenItem =
-          transaction.get(
-              new Get(new Key("rakuten_item_id", rakutenItemId)).forNamespace("rakuten").forTable("items"));
       transaction.put(
-          new Put(new Key("rakuten_item_id", rakutenItemId)).withValue("quantity", quantity)
+          new Put(new Key("rakuten_item_id", rakutenItemId))
+          .withValue("quantity", warehouseQuantity + quantity)
           .forNamespace("rakuten")
           .forTable("items")
       );
 
       transaction.commit();
 
-      return "ok";
+      // Return the quantity info as a JSON format
+      return String.format("%d: {\"id\": %d, \"name\": %s, \"quantity\": %d}",
+          1,
+          item.get().getValue("item_id").get().getAsInt(),
+          item.get().getValue("name").get().getAsString().get(),
+          item.get().getValue("quantity").get().getAsInt());
     } catch (Exception e) {
       if (transaction != null) {
         // If an error occurs, abort the transaction
@@ -822,6 +821,8 @@ public class Sample implements AutoCloseable {
       throw e;
     }
   }
+
+
 
   /*
   public void repayment(int customerId, int amount) throws TransactionException {
