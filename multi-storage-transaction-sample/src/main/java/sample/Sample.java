@@ -660,8 +660,6 @@ public class Sample implements AutoCloseable {
     }
   }
 
-  // doesn't work well because of the error of scan
-  // partition keyがamazon_customer_idではなくamazon_order_idなため使えなさそう
   public String getAmazonOrdersByCustomerId(int customerId) throws TransactionException {
     DistributedTransaction transaction = null;
     try {
@@ -696,8 +694,6 @@ public class Sample implements AutoCloseable {
     }
   }
 
-  // doesn't work well because of the error of scan
-  // partition keyがrakuten_customer_idではなくrakuten_order_idなため使えなさそう
   public String getRakutenOrdersByCustomerId(int customerId) throws TransactionException {
     DistributedTransaction transaction = null;
     try {
