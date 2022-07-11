@@ -791,6 +791,10 @@ public class Sample implements AutoCloseable {
           .forTable("items")
       );
 
+      // need to "get" before "put"
+      Optional<Result> amazonItem =
+          transaction.get(
+              new Get(new Key("amazon_item_id", amazonItemId)).forNamespace("amazon").forTable("items"));
       transaction.put(
           new Put(new Key("amazon_item_id", amazonItemId))
           .withValue("quantity", warehouseQuantity + quantity)
@@ -798,6 +802,10 @@ public class Sample implements AutoCloseable {
           .forTable("items")
       );
 
+      // need to "get" before "put"
+      Optional<Result> rakutenItem =
+          transaction.get(
+              new Get(new Key("rakuten_item_id", rakutenItemId)).forNamespace("rakuten").forTable("items"));
       transaction.put(
           new Put(new Key("rakuten_item_id", rakutenItemId))
           .withValue("quantity", warehouseQuantity + quantity)
