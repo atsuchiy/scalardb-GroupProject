@@ -285,7 +285,7 @@ public class Sample implements AutoCloseable {
               .forNamespace("amazon")
               .forTable("orders"));
 
-      // Put the order info into the orders table
+      // Put the order info into the statements table
       transaction.put(
           new Put(new Key("amazon_order_id", orderId),
           new Key("amazon_item_id", itemId))
@@ -397,15 +397,21 @@ public class Sample implements AutoCloseable {
               .forTable("orders"));
       */
 
-      // Put the order statement into the statements table
+      // Put the order statement into the orders table
       transaction.put(
-          new Put(new Key("rakuten_order_id", orderId),
+          new Put(new Key("rakuten_customer_id", customerId),
           new Key("timestamp", System.currentTimeMillis()))
-              .withValue("rakuten_customer_id", customerId)
-              .withValue("rakuten_item_id", itemId)
-              .withValue("count", itemCount)
+              .withValue("rakuten_order_id", orderId)
               .forNamespace("rakuten")
               .forTable("orders"));
+
+       // Put the order info into the statements table
+      transaction.put(
+        new Put(new Key("rakuten_order_id", orderId),
+        new Key("rakuten_item_id", itemId))
+            .withValue("count", itemCount)
+            .forNamespace("rakuten")
+            .forTable("statements"));
 
       // Retrieve the item info from the items table
       Optional<Result> rakutenItem =
@@ -574,8 +580,14 @@ public class Sample implements AutoCloseable {
                 .forNamespace("rakuten")
                 .forTable("customers"));
 
-      // Retrieve the item data from the items table
-      int itemId = order.get().getValue("rakuten_item_id").get().getAsInt();
+    List<Result> state =
+        transaction.scan(
+            new Scan(new Key("rakuten_order_id", orderId))
+                .forNamespace("rakuten")
+                .forTable("statements")); 
+                // Retrieve the item data from the items table
+      //int itemId = order.get().getValue("rakuten_item_id").get().getAsInt();
+      int itemId = state.get(0).getValue("rakuten_item_id").get().getAsInt();
       Optional<Result> item =
           transaction.get(
               new Get(new Key("rakuten_item_id", itemId)).forNamespace("rakuten").forTable("items"));
@@ -584,7 +596,7 @@ public class Sample implements AutoCloseable {
       }
 
       int price = item.get().getValue("price").get().getAsInt();
-      int count = order.get().getValue("count").get().getAsInt();
+      int count = state.get(0).getValue("count").get().getAsInt();
 
       String statement = String.format(
               "{\"item_id\": %d,\"item_name\": \"%s\",\"price\": %d,\"count\": %d,\"total\": %d}",

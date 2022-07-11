@@ -60,14 +60,22 @@
     },
     "rakuten.orders": {
         "transaction": true,
-        "partition-key": ["rakuten_order_id"],
+        "partition-key": ["rakuten_customer_id"],
         "clustering-key": ["timestamp"],
-        "secondary-index": ["rakuten_customer_id"],
+        "secondary-index": ["rakuten_order_id"],
         "columns": {
             "rakuten_order_id": "TEXT",
             "rakuten_customer_id": "INT",
+            "timestamp": "BIGINT"
+        }
+    },
+    "rakuten.statements": {
+        "transaction": true,
+        "partition-key": ["rakuten_order_id"],
+        "clustering-key": ["rakuten_item_id"],
+        "columns": {
+            "rakuten_order_id": "TEXT",
             "rakuten_item_id": "INT",
-            "timestamp": "BIGINT",
             "count": "INT"
         }
     },
