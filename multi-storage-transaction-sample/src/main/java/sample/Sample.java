@@ -271,10 +271,11 @@ public class Sample implements AutoCloseable {
       */
 
       // Put the order info into the orders table
+      long time = System.currentTimeMillis();
       transaction.put(
           new Put(
               new Key("amazon_customer_id", customerId),
-              new Key("timestamp", System.currentTimeMillis()))
+              new Key("timestamp", time))
               .withValue("amazon_order_id", orderId)
               .forNamespace("amazon")
               .forTable("orders"));
@@ -342,6 +343,19 @@ public class Sample implements AutoCloseable {
       if (!customer.isPresent()) {
         throw new RuntimeException("Customer not found");
       }
+
+      // update the warehouse.orders
+      String address = customer.get().getValue("address").get().getAsString().get();
+      transaction.put(
+        new Put(new Key("order_id", orderId))
+        .withValue("address", address)
+        .withValue("item_id", warehouse_itemId)
+        .withValue("count", itemCount)
+        .withValue("marketplace", "amazon")
+        .withValue("timestamp", time)
+        .forNamespace("warehouse")
+        .forTable("orders"));
+
       /*
       int creditLimit = customer.get().getValue("credit_limit").get().getAsInt();
       int creditTotal = customer.get().getValue("credit_total").get().getAsInt();
@@ -394,9 +408,10 @@ public class Sample implements AutoCloseable {
       */
 
       // Put the order statement into the orders table
+      long time = System.currentTimeMillis();
       transaction.put(
           new Put(new Key("rakuten_customer_id", customerId),
-          new Key("timestamp", System.currentTimeMillis()))
+          new Key("timestamp", time))
               .withValue("rakuten_order_id", orderId)
               .forNamespace("rakuten")
               .forTable("orders"));
@@ -464,6 +479,19 @@ public class Sample implements AutoCloseable {
       if (!customer.isPresent()) {
         throw new RuntimeException("Customer not found");
       }
+
+      // update the warehouse.orders
+      String address = customer.get().getValue("address").get().getAsString().get();
+      transaction.put(
+        new Put(new Key("order_id", orderId))
+        .withValue("address", address)
+        .withValue("item_id", warehouse_itemId)
+        .withValue("count", itemCount)
+        .withValue("marketplace", "rakuten")
+        .withValue("timestamp", time)
+        .forNamespace("warehouse")
+        .forTable("orders"));
+
       /*
       int creditLimit = customer.get().getValue("credit_limit").get().getAsInt();
       int creditTotal = customer.get().getValue("credit_total").get().getAsInt();
