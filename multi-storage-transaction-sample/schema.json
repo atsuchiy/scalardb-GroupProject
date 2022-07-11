@@ -82,7 +82,7 @@
     "warehouse.items": {
         "transaction": true,
         "partition-key": ["item_id"],
-        "secondary-index": ["amazon_order_id", "rakuten_order_id"],
+        "secondary-index": ["seller_id", "amazon_item_id", "rakuten_item_id"],
         "columns": {
             "item_id": "INT",
             "name": "TEXT",
