@@ -20,12 +20,22 @@
     },
     "amazon.orders": {
         "transaction": true,
-        "partition-key": ["amazon_order_id"],
+        "partition-key": ["amazon_customer_id"],
+        "clustering-key": ["timestamp"],
+        "secondary-index": ["amazon_order_id"],
         "columns": {
             "amazon_order_id": "TEXT",
             "amazon_customer_id": "INT",
+            "timestamp": "BIGINT"
+        }
+    },
+    "amazon.statements": {
+        "transaction": true,
+        "partition-key": ["amazon_order_id"],
+        "clustering-key": ["amazon_item_id"],
+        "columns": {
+            "amazon_order_id": "TEXT",
             "amazon_item_id": "INT",
-            "timestamp": "BIGINT",
             "count": "INT"
         }
     },
@@ -51,6 +61,8 @@
     "rakuten.orders": {
         "transaction": true,
         "partition-key": ["rakuten_order_id"],
+        "clustering-key": ["timestamp"],
+        "secondary-index": ["rakuten_customer_id"],
         "columns": {
             "rakuten_order_id": "TEXT",
             "rakuten_customer_id": "INT",
@@ -62,6 +74,7 @@
     "warehouse.items": {
         "transaction": true,
         "partition-key": ["item_id"],
+        "secondary-index": ["amazon_order_id", "rakuten_order_id"],
         "columns": {
             "item_id": "INT",
             "name": "TEXT",

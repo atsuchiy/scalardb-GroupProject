@@ -16,6 +16,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class Sample implements AutoCloseable {
 
@@ -272,12 +278,20 @@ public class Sample implements AutoCloseable {
 
       // Put the order info into the orders table
       transaction.put(
-          new Put(new Key("amazon_order_id", orderId))
-              .withValue("amazon_customer_id", customerId)
-              .withValue("amazon_item_id", itemId)
-              .withValue("count", itemCount)
+          new Put(
+              new Key("amazon_customer_id", customerId),
+              new Key("timestamp", System.currentTimeMillis()))
+              .withValue("amazon_order_id", orderId)
               .forNamespace("amazon")
               .forTable("orders"));
+
+      // Put the order info into the orders table
+      transaction.put(
+          new Put(new Key("amazon_order_id", orderId),
+          new Key("amazon_item_id", itemId))
+              .withValue("count", itemCount)
+              .forNamespace("amazon")
+              .forTable("statements"));
 
       // Retrieve the item info from the items table
       Optional<Result> amazonItem =
@@ -295,9 +309,6 @@ public class Sample implements AutoCloseable {
       Optional<Result> rakutenItem =
           transaction.get(
               new Get(new Key("rakuten_item_id", itemId)).forNamespace("rakuten").forTable("items"));
-
-      // Calculate the total amount
-      int amount = amazonItem.get().getValue("price").get().getAsInt() * itemCount;
 
       // Check if the count exceeds the quantity
       int warehouseQuantity = item.get().getValue("quantity").get().getAsInt();
@@ -388,7 +399,8 @@ public class Sample implements AutoCloseable {
 
       // Put the order statement into the statements table
       transaction.put(
-          new Put(new Key("rakuten_order_id", orderId))
+          new Put(new Key("rakuten_order_id", orderId),
+          new Key("timestamp", System.currentTimeMillis()))
               .withValue("rakuten_customer_id", customerId)
               .withValue("rakuten_item_id", itemId)
               .withValue("count", itemCount)
@@ -411,9 +423,6 @@ public class Sample implements AutoCloseable {
       Optional<Result> amazonItem =
           transaction.get(
               new Get(new Key("amazon_item_id", itemId)).forNamespace("amazon").forTable("items"));
-
-      // Calculate the total amount
-      int amount = rakutenItem.get().getValue("price").get().getAsInt() * itemCount;
 
       // Check if the count exceeds the quantity
       int warehouseQuantity = item.get().getValue("quantity").get().getAsInt();
@@ -490,9 +499,9 @@ public class Sample implements AutoCloseable {
     if (!order.isPresent()) {
       throw new RuntimeException("Order not found");
     }
-
+    
     int customerId = order.get().getValue("amazon_customer_id").get().getAsInt();
-
+    // System.out.println("customerId" +  Integer.valueOf(customerId).toString());
     // Retrieve the customer info for the specified customer ID from the customers table
     Optional<Result> customer =
         transaction.get(
@@ -500,8 +509,22 @@ public class Sample implements AutoCloseable {
                 .forNamespace("amazon")
                 .forTable("customers"));
 
+    /* Optional<Result> state =
+        transaction.get(
+            new Get(new Key("amazon_order_id", orderId))
+            .forNamespace("amazon")
+            .forTable("statements"));
+       */     
+    List<Result> state =
+        transaction.scan(
+            new Scan(new Key("amazon_order_id", orderId))
+            .forNamespace("amazon")
+            .forTable("statements")); 
+               
     // Retrieve the item data from the items table
-    int itemId = order.get().getValue("amazon_item_id").get().getAsInt();
+    //int itemId = state.get().getValue("amazon_item_id").get().getAsInt();
+    int itemId = state.get(0).getValue("amazon_item_id").get().getAsInt();
+    // System.out.println("itemId" +  Integer.valueOf(itemId).toString());
     Optional<Result> item =
         transaction.get(
             new Get(new Key("amazon_item_id", itemId)).forNamespace("amazon").forTable("items"));
@@ -510,8 +533,10 @@ public class Sample implements AutoCloseable {
     }
 
     int price = item.get().getValue("price").get().getAsInt();
-    int count = order.get().getValue("count").get().getAsInt();
+    int count = state.get(0).getValue("count").get().getAsInt();
 
+    //System.out.println("price" +  Integer.valueOf(price).toString());
+    //System.out.println("count" +  Integer.valueOf(count).toString());
     String statement = String.format(
             "{\"item_id\": %d,\"item_name\": \"%s\",\"price\": %d,\"count\": %d,\"total\": %d}",
             itemId,

@@ -10,17 +10,17 @@ import picocli.CommandLine.Option;
     subcommands = {
       LoadInitialDataCommand.class,
       //PlaceOrderCommand.class,
-      PlaceAmazonOrderCommand.class,
-      PlaceRakutenOrderCommand.class,
+      PlaceAmazonOrderCommand.class, //ok
+      PlaceRakutenOrderCommand.class, //ok
       //GetOrderCommand.class,
-      GetAmazonOrderCommand.class,
+      GetAmazonOrderCommand.class, //ok
       GetRakutenOrderCommand.class,
       //GetOrdersCommand.class,
       GetAmazonOrdersCommand.class,
       GetRakutenOrdersCommand.class,
       //GetCustomerInfoCommand.class,
-      GetAmazonCustomerInfoCommand.class,
-      GetRakutenCustomerInfoCommand.class,
+      GetAmazonCustomerInfoCommand.class, //ok
+      GetRakutenCustomerInfoCommand.class, //ok
       //RepaymentCommand.class
 
       GetItemsCommand.class,
