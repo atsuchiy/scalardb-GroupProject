@@ -774,7 +774,6 @@ public class Sample implements AutoCloseable {
 
       // Make order JSONs for the orders of the customer
       List<String> orderJsons = new ArrayList<>();
-      int count = 1;
       for (Result order : orders) {
         int itemId = order.getValue("item_id").get().getAsInt();
         Optional<Result> item =
@@ -783,13 +782,12 @@ public class Sample implements AutoCloseable {
                 .forNamespace("warehouse")
                 .forTable("items"));
         orderJsons.add(
-              String.format("%d: {\"order_id\": %s, \"marketplace\": %s, \"item_id\": %d, \"name\": %s, \"count\": %d}",
-                            count++,
+              String.format("{\"order_id\": %s, \"item_id\": %d, \"name\": %s, \"quantity\": %d, \"timestamp\": %ld}",
                             order.getValue("order_id").get().getAsString().get(),
-                            order.getValue("marketplace").get().getAsString().get(),
                             order.getValue("item_id").get().getAsInt(),
                             item.get().getValue("name").get().getAsString().get(),
-                            order.getValue("count").get().getAsInt()
+                            order.getValue("count").get().getAsInt(),
+                            order.getValue("timestamp").get().getAsLong()
                             ));
       }
 
@@ -797,7 +795,103 @@ public class Sample implements AutoCloseable {
       transaction.commit();
 
       // Return the item info as a JSON format
-      return String.format("{%s}", String.join(",", orderJsons));
+      return String.format("{stocks: [%s]}", String.join(",", orderJsons));
+    } catch (Exception e) {
+      if (transaction != null) {
+        // If an error occurs, abort the transaction
+        transaction.abort();
+      }
+      throw e;
+    }
+  }
+
+  public String getAmazonOrdersBySellerId(int sellerId) throws TransactionException {
+    DistributedTransaction transaction = null;
+    try {
+      // Start a transaction
+      transaction = manager.start();
+
+      List<Result> orders =
+          transaction.scan(
+                new Scan(new Key("seller_id", sellerId))
+                    .forNamespace("warehouse")
+                    .forTable("orders"));
+
+      // Make order JSONs for the orders of the customer
+      List<String> orderJsons = new ArrayList<>();
+      for (Result order : orders) {
+        String marketplace = order.getValue("marketplace").get().getAsString().get();
+        if (marketplace.equals("amazon")) {
+          int itemId = order.getValue("item_id").get().getAsInt();
+          Optional<Result> item =
+              transaction.get(
+                  new Get(new Key("item_id", itemId))
+                  .forNamespace("warehouse")
+                  .forTable("items"));
+          orderJsons.add(
+                String.format("{\"order_id\": %s, \"item_id\": %d, \"name\": %s, \"quantity\": %d, \"timestamp\": %d}",
+                              order.getValue("order_id").get().getAsString().get(),
+                              order.getValue("item_id").get().getAsInt(),
+                              item.get().getValue("name").get().getAsString().get(),
+                              order.getValue("count").get().getAsInt(),
+                              order.getValue("timestamp").get().getAsLong()
+                              ));
+        }
+      }  
+
+      // Commit the transaction (even when the transaction is read-only, we need to commit)
+      transaction.commit();
+
+      // Return the item info as a JSON format
+      return String.format("{\"stocks\": [%s]}", String.join(",", orderJsons));
+    } catch (Exception e) {
+      if (transaction != null) {
+        // If an error occurs, abort the transaction
+        transaction.abort();
+      }
+      throw e;
+    }
+  }
+
+  public String getRakutenOrdersBySellerId(int sellerId) throws TransactionException {
+    DistributedTransaction transaction = null;
+    try {
+      // Start a transaction
+      transaction = manager.start();
+
+      List<Result> orders =
+          transaction.scan(
+                new Scan(new Key("seller_id", sellerId))
+                    .forNamespace("warehouse")
+                    .forTable("orders"));
+
+      // Make order JSONs for the orders of the customer
+      List<String> orderJsons = new ArrayList<>();
+      for (Result order : orders) {
+        String marketplace = order.getValue("marketplace").get().getAsString().get();
+        if (marketplace.equals("rakuten")) {
+          int itemId = order.getValue("item_id").get().getAsInt();
+          Optional<Result> item =
+              transaction.get(
+                  new Get(new Key("item_id", itemId))
+                  .forNamespace("warehouse")
+                  .forTable("items"));
+          orderJsons.add(
+                String.format("{\"order_id\": %s, \"item_id\": %d, \"name\": %s, \"quantity\": %d, \"timestamp\": %d}",
+                              order.getValue("order_id").get().getAsString().get(),
+                              order.getValue("item_id").get().getAsInt(),
+                              item.get().getValue("name").get().getAsString().get(),
+                              order.getValue("count").get().getAsInt(),
+                              order.getValue("timestamp").get().getAsLong()
+                              ));
+        }
+      }  
+
+      // Commit the transaction (even when the transaction is read-only, we need to commit)
+      transaction.commit();
+
+      // Return the item info as a JSON format
+      return String.format("{\"stocks\": [%s]}", String.join(",", orderJsons));
     } catch (Exception e) {
       if (transaction != null) {
         // If an error occurs, abort the transaction
@@ -824,8 +918,7 @@ public class Sample implements AutoCloseable {
       int count = 1;
       for (Result item : items) {
         itemJsons.add(
-            String.format("%d: {\"id\": %d, \"name\": %s, \"quantity\": %d}",
-                          count++,
+            String.format("{\"id\": %d, \"name\": %s, \"quantity\": %d}",
                           item.getValue("item_id").get().getAsInt(),
                           item.getValue("name").get().getAsString().get(),
                           item.getValue("quantity").get().getAsInt()));
@@ -835,7 +928,7 @@ public class Sample implements AutoCloseable {
       transaction.commit();
 
       // Return the item info as a JSON format
-      return String.format("{%s}", String.join(",", itemJsons));
+      return String.format("{\"stocks\": [%s]}", String.join(",", itemJsons));
     } catch (Exception e) {
       if (transaction != null) {
         // If an error occurs, abort the transaction

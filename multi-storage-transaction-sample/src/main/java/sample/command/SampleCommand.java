@@ -16,8 +16,10 @@ import picocli.CommandLine.Option;
       GetAmazonOrderCommand.class, //ok
       GetRakutenOrderCommand.class,
       //GetOrdersCommand.class,
-      GetAmazonOrdersCommand.class,
-      GetRakutenOrdersCommand.class,
+      GetAmazonOrdersByCustomerIdCommand.class,
+      GetRakutenOrdersByCustomerIdCommand.class,
+      GetAmazonOrdersBySellerIdCommand.class,
+      GetRakutenOrdersBySellerIdCommand.class,
       //GetCustomerInfoCommand.class,
       GetAmazonCustomerInfoCommand.class, //ok
       GetRakutenCustomerInfoCommand.class, //ok
