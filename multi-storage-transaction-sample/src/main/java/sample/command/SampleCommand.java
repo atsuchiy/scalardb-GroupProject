@@ -23,6 +23,7 @@ import picocli.CommandLine.Option;
       GetRakutenCustomerInfoCommand.class, //ok
       //RepaymentCommand.class
 
+      GetOrdersCommand.class,
       GetItemsCommand.class,
       SetQuantityCommand.class
     })

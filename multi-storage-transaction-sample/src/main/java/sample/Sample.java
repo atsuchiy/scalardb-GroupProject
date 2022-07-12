@@ -345,6 +345,7 @@ public class Sample implements AutoCloseable {
       }
 
       // update the warehouse.orders
+      int sellerId = item.get(0).getValue("seller_id").get().getAsInt();
       String address = customer.get().getValue("address").get().getAsString().get();
       transaction.put(
         new Put(new Key("order_id", orderId))
@@ -353,6 +354,7 @@ public class Sample implements AutoCloseable {
         .withValue("count", itemCount)
         .withValue("marketplace", "amazon")
         .withValue("timestamp", time)
+        .withValue("seller_id", sellerId)
         .forNamespace("warehouse")
         .forTable("orders"));
 
@@ -481,6 +483,7 @@ public class Sample implements AutoCloseable {
       }
 
       // update the warehouse.orders
+      int sellerId = item.get(0).getValue("seller_id").get().getAsInt();
       String address = customer.get().getValue("address").get().getAsString().get();
       transaction.put(
         new Put(new Key("order_id", orderId))
@@ -489,6 +492,7 @@ public class Sample implements AutoCloseable {
         .withValue("count", itemCount)
         .withValue("marketplace", "rakuten")
         .withValue("timestamp", time)
+        .withValue("seller_id", sellerId)
         .forNamespace("warehouse")
         .forTable("orders"));
 
@@ -756,7 +760,53 @@ public class Sample implements AutoCloseable {
     }
   }
 
-  // doesn't work well because of the error of scan
+  public String getOrdersBySellerId(int sellerId) throws TransactionException {
+    DistributedTransaction transaction = null;
+    try {
+      // Start a transaction
+      transaction = manager.start();
+
+      List<Result> orders =
+          transaction.scan(
+                new Scan(new Key("seller_id", sellerId))
+                    .forNamespace("warehouse")
+                    .forTable("orders"));
+
+      // Make order JSONs for the orders of the customer
+      List<String> orderJsons = new ArrayList<>();
+      int count = 1;
+      for (Result order : orders) {
+        int itemId = order.getValue("item_id").get().getAsInt();
+        Optional<Result> item =
+            transaction.get(
+                new Get(new Key("item_id", itemId))
+                .forNamespace("warehouse")
+                .forTable("items"));
+        orderJsons.add(
+              String.format("%d: {\"order_id\": %s, \"marketplace\": %s, \"item_id\": %d, \"name\": %s, \"count\": %d}",
+                            count++,
+                            order.getValue("order_id").get().getAsString().get(),
+                            order.getValue("marketplace").get().getAsString().get(),
+                            order.getValue("item_id").get().getAsInt(),
+                            item.get().getValue("name").get().getAsString().get(),
+                            order.getValue("count").get().getAsInt()
+                            ));
+      }
+
+      // Commit the transaction (even when the transaction is read-only, we need to commit)
+      transaction.commit();
+
+      // Return the item info as a JSON format
+      return String.format("{%s}", String.join(",", orderJsons));
+    } catch (Exception e) {
+      if (transaction != null) {
+        // If an error occurs, abort the transaction
+        transaction.abort();
+      }
+      throw e;
+    }
+  }
+
   public String getItems(int sellerId) throws TransactionException {
     DistributedTransaction transaction = null;
     try {
@@ -765,7 +815,7 @@ public class Sample implements AutoCloseable {
 
       List<Result> items =
           transaction.scan(
-              new Scan(new Key("seller_id", sellerId)) //ここ”seller_id"の代わりにパーティションキー”item_id"にするとエラー起きずに実行できた
+              new Scan(new Key("seller_id", sellerId))
                   .forNamespace("warehouse")
                   .forTable("items"));
       
