@@ -17,17 +17,31 @@ function Header() {
 const App = () => {
   const [stocks, setStocks] = useState([]);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            const result = await axios.get(
-                'http://localhost:4567/api/getitems'
-            ).then((response) => {
-            const json = JSON.parse(response.data);
-            setStocks(json.stocks);
-            })
+  const fetchData = async () => {
+    const result = await axios.get(
+        'http://localhost:4567/api/getitems'
+    ).then((response) => {
+    const json = JSON.parse(response.data);
+    setStocks(json.stocks);
+    })
+  }
+
+  useEffect(() => {
+      fetchData();
+  }, [setStocks]);
+
+  const addItem = async (id, quantity) => {
+    const result = await axios.post(
+        'http://localhost:4567/api/setquantity', {
+            'id': id,
+            'quantity': quantity
         }
+    ).then((response) => {
+        console.log(response.data);
+        const json = JSON.parse(response.data);
         fetchData();
-    }, [setStocks]);
+    });
+  }
 
   return (
     <div className="App">
@@ -40,7 +54,7 @@ const App = () => {
           </Col>
           <Col xs={4}>
             <h2>Add items</h2>
-            <RenderForm/>
+            <RenderForm addItem={addItem}/>
           </Col>
         </Row>
       </Container>

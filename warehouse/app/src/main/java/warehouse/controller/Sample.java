@@ -987,10 +987,10 @@ public class Sample implements AutoCloseable {
       transaction.commit();
 
       // Return the quantity info as a JSON format
-      return String.format("%d: {\"id\": %d, \"name\": %s, \"quantity\": %d}",
+      return String.format("%d: {\"id\": %d, \"name\": \"%s,\" \"quantity\": %d}",
           1,
           item.get().getValue("item_id").get().getAsInt(),
-          item.get().getValue("name").get().getAsString().get(),
+          item.get().getValue("name").get().getAsString().get() + quantity,
           item.get().getValue("quantity").get().getAsInt());
     } catch (Exception e) {
       if (transaction != null) {
