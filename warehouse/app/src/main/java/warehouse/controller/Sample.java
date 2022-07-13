@@ -918,7 +918,7 @@ public class Sample implements AutoCloseable {
       int count = 1;
       for (Result item : items) {
         itemJsons.add(
-            String.format("{\"id\": %d, \"name\": %s, \"quantity\": %d}",
+            String.format("{\"id\": %d, \"name\": \"%s\", \"quantity\": %d}",
                           item.getValue("item_id").get().getAsInt(),
                           item.getValue("name").get().getAsString().get(),
                           item.getValue("quantity").get().getAsInt()));

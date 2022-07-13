@@ -1,8 +1,10 @@
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {Button, Col, Container, Navbar, Row} from 'react-bootstrap';
-import Form from 'react-bootstrap/Form';
+import {Col, Container, Navbar, Row} from 'react-bootstrap';
+import RenderForm from './RenderForm';
 import RenderTable from './RenderTable'
+import axios from 'axios';
 
 function Header() {
   return (
@@ -12,27 +14,21 @@ function Header() {
   )
 }
 
-// submitしたらPOST
-// 結果をstateに入れる
-function RenderForm() {
-  return (
-    <Form className>
-      <Form.Group controlId="formBasicId">
-        <Form.Label>id</Form.Label>
-        <Form.Control type="email" placeholder="Enter id"/>
-      </Form.Group>
-      <Form.Group controlId="formBasicQuantity">
-        <Form.Label>Quantity</Form.Label>
-        <Form.Control type="password" placeholder="Enter quantity"/>
-      </Form.Group>
-      <Button variant="primary" type="submit">
-        Submit
-      </Button>
-    </Form>
-  )
-}
+const App = () => {
+  const [stocks, setStocks] = useState([]);
 
-function App() {
+    useEffect(() => {
+        const fetchData = async () => {
+            const result = await axios.get(
+                'http://localhost:4567/api/getitems'
+            ).then((response) => {
+            const json = JSON.parse(response.data);
+            setStocks(json.stocks);
+            })
+        }
+        fetchData();
+    }, [setStocks]);
+
   return (
     <div className="App">
       <Header/>
@@ -40,7 +36,7 @@ function App() {
         <Row>
           <Col xs={12} md={8}>
             <h2>Stock List Table</h2>
-            <RenderTable/>
+            <RenderTable stocks={stocks}/>
           </Col>
           <Col xs={4}>
             <h2>Add items</h2>

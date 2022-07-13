@@ -1,25 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Table from 'react-bootstrap/Table';
-import axios from 'axios';
 
-const RenderTable = () => {
-    const [stocks, setStocks] = useState([])
-
-    useEffect(async () => {
-        const fetchData = async () => {
-            fetch('http://localhost:4567/api/getitems', {
-                method: 'GET',
-                mode: 'cors',
-            })
-            .then(res => res.json())
-            .then(data => {
-                setStocks(data.stocks)
-            })
-        }
-        fetchData();
-    }, [])
-
+const RenderTable = (props) => {
     return(
         <Table>
             <thead>
@@ -30,7 +13,7 @@ const RenderTable = () => {
             </tr>
             </thead>
             <tbody>
-                {stocks.map(item =>
+                {props.stocks.map(item =>
                     <tr>
                         <td>{item.id}</td>
                         <td>{item.name}</td>
