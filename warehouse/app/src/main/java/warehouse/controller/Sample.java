@@ -1,4 +1,4 @@
-package sample;
+package warehouse.controller;
 
 import com.scalar.db.api.DistributedTransaction;
 import com.scalar.db.api.DistributedTransactionManager;
@@ -42,7 +42,7 @@ public class Sample implements AutoCloseable {
       loadAmazonCustomersIfNotExists(transaction, 3, "Mita Taro", "Japan");
       loadRakutenItemsIfNotExists(transaction, 1, "Melon", 1500, 300);
       loadRakutenItemsIfNotExists(transaction, 2, "Mango", 1000, 1000);
-      loadRakutenItemsIfNotExists(transaction, 3, "Grape", 700, 10);
+      loadRakutenItemsIfNotExists(transaction, 3, "Grape", 700, 150);
       loadRakutenItemsIfNotExists(transaction, 4, "Orange", 300, 50);
       loadRakutenItemsIfNotExists(transaction, 5, "Apple", 200, 100);
       loadRakutenCustomersIfNotExists(transaction, 1, "Yamada Hanako", "China");
