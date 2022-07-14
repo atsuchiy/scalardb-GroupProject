@@ -1,3 +1,10 @@
+# 動かす
+1. パッケージのインストール
+`npm install`
+2. 実行
+`npm start`
+3. [http://localhost:3000](http://localhost:3000)が勝手に開かれる（はず）
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
