@@ -87,7 +87,7 @@ const App = () => {
             <RenderOrderTable orders={rakutenOrders}/>
           </Col>
           <Col lg={12} xl={6}>
-            <h2>Rakuten order history</h2>
+            <h2>Amazon order history</h2>
             <RenderOrderTable orders={amazonOrders}/>
           </Col>
         </Row>
