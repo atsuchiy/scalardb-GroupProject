@@ -829,7 +829,7 @@ public class Sample implements AutoCloseable {
                   .forNamespace("warehouse")
                   .forTable("items"));
           orderJsons.add(
-                String.format("{\"order_id\": %s, \"item_id\": %d, \"name\": %s, \"quantity\": %d, \"timestamp\": %d}",
+                String.format("{\"order_id\": \"%s\", \"item_id\": %d, \"name\": \"%s\", \"quantity\": %d, \"timestamp\": %d}",
                               order.getValue("order_id").get().getAsString().get(),
                               order.getValue("item_id").get().getAsInt(),
                               item.get().getValue("name").get().getAsString().get(),
@@ -843,7 +843,7 @@ public class Sample implements AutoCloseable {
       transaction.commit();
 
       // Return the item info as a JSON format
-      return String.format("{\"stocks\": [%s]}", String.join(",", orderJsons));
+      return String.format("{\"orders\": [%s]}", String.join(",", orderJsons));
     } catch (Exception e) {
       if (transaction != null) {
         // If an error occurs, abort the transaction
@@ -877,7 +877,7 @@ public class Sample implements AutoCloseable {
                   .forNamespace("warehouse")
                   .forTable("items"));
           orderJsons.add(
-                String.format("{\"order_id\": %s, \"item_id\": %d, \"name\": %s, \"quantity\": %d, \"timestamp\": %d}",
+                String.format("{\"order_id\": \"%s\", \"item_id\": %d, \"name\": \"%s\", \"quantity\": %d, \"timestamp\": %d}",
                               order.getValue("order_id").get().getAsString().get(),
                               order.getValue("item_id").get().getAsInt(),
                               item.get().getValue("name").get().getAsString().get(),
@@ -891,7 +891,7 @@ public class Sample implements AutoCloseable {
       transaction.commit();
 
       // Return the item info as a JSON format
-      return String.format("{\"stocks\": [%s]}", String.join(",", orderJsons));
+      return String.format("{\"orders\": [%s]}", String.join(",", orderJsons));
     } catch (Exception e) {
       if (transaction != null) {
         // If an error occurs, abort the transaction
