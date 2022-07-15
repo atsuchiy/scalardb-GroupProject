@@ -64,6 +64,7 @@ const App = () => {
         console.log(response.data);
         const json = JSON.parse(response.data);
         getItems();
+        alert('succeed in adding items!\n' + 'id' + ' : ' + id + '\n' + 'quantity' + ' : ' + quantity)
     });
   }
 
