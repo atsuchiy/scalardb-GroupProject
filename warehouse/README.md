@@ -1,5 +1,6 @@
 # 必要なもの
 - Docker
+- scalardb-schema-loader-3.5.2.jar
 
 # init
 1. Docker を立ち上げる．  
@@ -8,6 +9,8 @@
 `warehouse % ./gradlew build`  
 3. schema.json に書かれたテーブルを作成（データの挿入はなし）．  
 `java -jar tools/scalardb-schema-loader-3.5.2.jar --config app/database.properties --coordinator -f tools/schema.json`  
+※ なぜかscalardb-schema-loader-3.5.2.jarがアップロードできなかったので，上記コマンドを実行する前に以下のリンクからダウンロードして`scalardb-GroupProject/warehouse/tools`においてください．  
+https://github.com/scalar-labs/scalardb/releases/tag/v3.5.2  
 4. サーバーを立ち上げる．  
 `warehouse % ./gradlew run`  
 5. <http://localhost:4567/api/loadinitialdata> にアクセスする．  データベースにデータが挿入される．  
