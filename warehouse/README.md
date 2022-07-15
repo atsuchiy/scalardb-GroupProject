@@ -29,22 +29,22 @@ APIを実行するためのURLは全て <http://localhost:4567/api/XXX> から�
 
 # API
 
-| Path                         | Method | 概要                                              | パラメータ名                           | 型                    | 内容                                                         | Response |
-| ---------------------------- | ------ | ------------------------------------------------- | -------------------------------------- | --------------------- | ------------------------------------------------------------ | -------- |
+| Path                         | Method | 概要                                              | パラメータ名                           | 型                    | 内容                                                         |
+| ---------------------------- | ------ | ------------------------------------------------- | -------------------------------------- | --------------------- | ------------------------------------------------------------ |
 | loadinitialdata              | get    | tools/schema.jsonから <br >初期データをロードする | -                                      | -                     | -                                                            |
-| getitems                     | get    | 倉庫の商品一覧を取得するÏ                         | -                                      | -                     | -                                                            |
+| getitems                     | get    | 倉庫の商品一覧を取得する                          | -                                      | -                     | -                                                            |
 | placeamazonorder             | post   | Amazonに注文をする                                | customer_id <br> item_id <br> quantity | int <br> int <br> int | Amazonのカスタマーid <br> Amazonのアイテムid <br> 注文数量   |
 | placerakutenorder            | post   | Rakutenに注文をする                               | customer_id <br> item_id <br> quantity | int <br> int <br> int | Rakutenのカスタマーid <br> Rakutenのアイテムid <br> 注文数量 |
-| getamazonorder               | post   | Amazonの注文一覧を取得する                        |
-| getrakutenorder              |        |                                                   |                                        |                       |                                                              |
-| getamazoncustomerinfo        |        |                                                   |                                        |                       |                                                              |
-| getrakutencustomerinfo       |        |                                                   |                                        |                       |                                                              |
-| getamazonordersbycustomerid  |        |                                                   |                                        |                       |
-| getrakutenordersbycustomerid |        |                                                   |                                        |                       |                                                              |
-| setquantity                  |        |                                                   |                                        |                       |
-| getamazonhistory             |        |                                                   |                                        |                       |                                                              |          |
-| getrakutenhistory            |        |                                                   |                                        |                       |                                                              |          |
-| hello                        | get    | 動作確認用                                        |                                        |                       |
+| getamazonorder               | post   | Amazonの注文を取得する                            | order_id                               | int                   | Amazonの注文id                                               |
+| getrakutenorder              | post   | Rakutenの注文を取得する                           | order_id                               | int                   | Rakutenの注文id                                              |
+| getamazoncustomerinfo        | post   | Amazonの顧客情報を取得する                        | id                                     | int                   | Amazonの顧客id                                               |
+| getrakutencustomerinfo       | post   | Rakutenの顧客情報を取得する                       | id                                     | int                   | Rakutenの顧客id                                              |
+| getamazonordersbycustomerid  | post   | Amazonの注文一覧を表示する                        | id                                     | int                   | Amazonのカスタマーid                                         |
+| getrakutenordersbycustomerid | post   | Rakutenの注文一覧を表示する                       | id                                     | int                   | Rakutenのカスタマーid                                        |
+| setquantity                  | post   | 在庫数を調整する                                  | id   <br> quantity                     | int<br>int            | 商品id<br>増減させる数量                                     |
+| getamazonhistory             | get    | Amazonの注文履歴を取得する                        | -                                      | -                     | -                                                            |
+| getrakutenhistory            | get    | Rakutenの注文履歴を取得する                       | -                                      | -                     | -                                                            |
+| hello                        | get    | 動作確認用                                        | -                                      | -                     | -                                                            |
 # ファイルの編集
 
 ファイルを編集した後に以下を実行する．
