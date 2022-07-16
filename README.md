@@ -11,6 +11,8 @@ amazon, rakutenそれぞれのnamespaceにitems,customers,orders,statementsテ�
 
 warehouseのnamespaceにitemsとordersテーブルを定義した
 
+MySQLとCassandraのmulti-storage構成
+
 
 [The schema](warehouse/tools/schema.json) is as follows:
 
